@@ -1,99 +1,229 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>2048</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2048 Game</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+    }
 
-  <link href="style/main.css" rel="stylesheet" type="text/css">
-  <link rel="shortcut icon" href="favicon.ico">
-  <link rel="apple-touch-icon" href="meta/apple-touch-icon.png">
-  <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x1096.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"> <!-- iPhone 5+ -->
-  <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x920.png"  media="(device-width: 320px) and (device-height: 480px) and (-webkit-device-pixel-ratio: 2)"> <!-- iPhone, retina -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      gap: 10px;
+      margin-top: 20px;
+    }
 
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui">
+    .tile {
+      width: 100px;
+      height: 100px;
+      border: 2px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <div class="heading">
-      <h1 class="title">2048</h1>
-      <div class="scores-container">
-        <div class="score-container">0</div>
-        <div class="best-container">0</div>
-      </div>
-    </div>
+  <h1>2048 Game</h1>
+  <div id="game-board"></div>
 
-    <div class="above-game">
-      <p class="game-intro">Join the numbers and get to the <strong>2048 tile!</strong></p>
-      <a class="restart-button">New Game</a>
-    </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const board = document.getElementById('game-board');
+      let tiles = Array(16).fill(0);
 
-    <div class="game-container">
-      <div class="game-message">
-        <p></p>
-        <div class="lower">
-	        <a class="keep-playing-button">Keep going</a>
-          <a class="retry-button">Try again</a>
-        </div>
-      </div>
+      function renderBoard() {
+        board.innerHTML = '';
+        tiles.forEach((value) => {
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          tile.textContent = value !== 0 ? value : '';
+          board.appendChild(tile);
+        });
+      }
 
-      <div class="grid-container">
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-      </div>
+      function getRandomEmptyCell() {
+        const emptyCells = tiles.reduce((acc, value, index) => {
+          if (value === 0) {
+            acc.push(index);
+          }
+          return acc;
+        }, []);
+        return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      }
 
-      <div class="tile-container">
+      function addRandomTile() {
+        const value = Math.random() < 0.9 ? 2 : 4;
+        const index = getRandomEmptyCell();
+        tiles[index] = value;
+        renderBoard();
+      }
 
-      </div>
-    </div>
+      function mergeTiles(startIndex, targetIndex) {
+        tiles[targetIndex] *= 2;
+        tiles[startIndex] = 0;
+        renderBoard();
+      }
 
-    <p class="game-explanation">
-      <strong class="important">How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
-    </p>
-    <hr>
-    <p>
-    <strong class="important">Note:</strong> This site is the official version of 2048. You can play it on your phone via <a href="http://git.io/2048">http://git.io/2048.</a> All other apps or sites are derivatives or fakes, and should be used with caution.
-    </p>
-    <hr>
-    <p>
-    Created by <a href="http://gabrielecirulli.com" target="_blank">Gabriele Cirulli.</a> Based on <a href="https://itunes.apple.com/us/app/1024!/id823499224" target="_blank">1024 by Veewo Studio</a> and conceptually similar to <a href="http://asherv.com/threes/" target="_blank">Threes by Asher Vollmer.</a>
-    </p>
-  </div>
+      function move(direction) {
+        switch (direction) {
+          case 'right':
+            moveRight();
+            break;
+          case 'left':
+            moveLeft();
+            break;
+          case 'up':
+            moveUp();
+            break;
+          case 'down':
+            moveDown();
+            break;
+        }
+        addRandomTile();
+      }
 
-  <script src="js/bind_polyfill.js"></script>
-  <script src="js/classlist_polyfill.js"></script>
-  <script src="js/animframe_polyfill.js"></script>
-  <script src="js/keyboard_input_manager.js"></script>
-  <script src="js/html_actuator.js"></script>
-  <script src="js/grid.js"></script>
-  <script src="js/tile.js"></script>
-  <script src="js/local_storage_manager.js"></script>
-  <script src="js/game_manager.js"></script>
-  <script src="js/application.js"></script>
+      function moveRight() {
+        for (let row = 0; row < 4; row++) {
+          for (let col = 2; col >= 0; col--) {
+            const currentIndex = row * 4 + col;
+            const currentValue = tiles[currentIndex];
+
+            if (currentValue !== 0) {
+              let nextCol = col + 1;
+
+              while (nextCol < 4 && tiles[row * 4 + nextCol] === 0) {
+                nextCol++;
+              }
+
+              if (nextCol < 4 && tiles[row * 4 + nextCol] === currentValue) {
+                mergeTiles(currentIndex, row * 4 + nextCol);
+              } else {
+                tiles[row * 4 + nextCol - 1] = currentValue;
+                tiles[currentIndex] = 0;
+              }
+            }
+          }
+        }
+      }
+
+      function moveLeft() {
+        for (let row = 0; row < 4; row++) {
+          for (let col = 1; col < 4; col++) {
+            const currentIndex = row * 4 + col;
+            const currentValue = tiles[currentIndex];
+
+            if (currentValue !== 0) {
+              let nextCol = col - 1;
+
+              while (nextCol >= 0 && tiles[row * 4 + nextCol] === 0) {
+                nextCol--;
+              }
+
+              if (nextCol >= 0 && tiles[row * 4 + nextCol] === currentValue) {
+                mergeTiles(currentIndex, row * 4 + nextCol);
+              } else {
+                tiles[row * 4 + nextCol + 1] = currentValue;
+                tiles[currentIndex] = 0;
+              }
+            }
+          }
+        }
+      }
+
+      function moveUp() {
+        for (let col = 0; col < 4; col++) {
+          for (let row = 1; row < 4; row++) {
+            const currentIndex = row * 4 + col;
+            const currentValue = tiles[currentIndex];
+
+            if (currentValue !== 0) {
+              let nextRow = row - 1;
+
+              while (nextRow >= 0 && tiles[nextRow * 4 + col] === 0) {
+                nextRow--;
+              }
+
+              if (nextRow >= 0 && tiles[nextRow * 4 + col] === currentValue) {
+                mergeTiles(currentIndex, nextRow * 4 + col);
+              } else {
+                tiles[nextRow + 1 * 4 + col] = currentValue;
+                tiles[currentIndex] = 0;
+              }
+            }
+          }
+        }
+      }
+
+      function moveDown() {
+        for (let col = 0; col < 4; col++) {
+          for (let row = 2; row >= 0; row--) {
+            const currentIndex = row * 4 + col;
+            const currentValue = tiles[currentIndex];
+
+            if (currentValue !== 0) {
+              let nextRow = row + 1;
+
+              while (nextRow < 4 && tiles[nextRow * 4 + col] === 0) {
+                nextRow++;
+              }
+
+              if (nextRow < 4 && tiles[nextRow * 4 + col] === currentValue) {
+                mergeTiles(currentIndex, nextRow * 4 + col);
+              } else {
+                tiles[nextRow - 1 * 4 + col] = currentValue;
+                tiles[currentIndex] = 0;
+              }
+            }
+          }
+        }
+      }
+
+      function handleSwipe(startX, startY, endX, endY) {
+        const deltaX = endX - startX;
+        const deltaY = endY - startY;
+        const threshold = 50;
+
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > threshold) {
+          if (deltaX > 0) {
+            move('right');
+          } else {
+            move('left');
+          }
+        } else if (Math.abs(deltaY) > threshold) {
+          if (deltaY > 0) {
+            move('down');
+          } else {
+            move('up');
+          }
+        }
+      }
+
+      function handleTouchStart(event) {
+        touchStartX = event.touches[0].clientX;
+        touchStartY = event.touches[0].clientY;
+      }
+
+      function handleTouchMove(event) {
+        event.preventDefault();
+        const touchMoveX = event.touches[0].clientX;
+        const touchMoveY = event.touches[0].clientY;
+        handleSwipe(touchStartX, touchStartY, touchMoveX, touchMoveY);
+      }
+
+      document.addEventListener('touchstart', handleTouchStart);
+      document.addEventListener('touchmove', handleTouchMove);
+
+      addRandomTile();
+      addRandomTile();
+      renderBoard();
+    });
+  </script>
 </body>
 </html>
