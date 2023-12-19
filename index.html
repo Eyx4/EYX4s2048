@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2048 Game</title>
+  <title>Eyx4's 2048 Tile Game</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -30,7 +30,7 @@
   </style>
 </head>
 <body>
-  <h1>2048 Game</h1>
+  <h1>Eyx4's 2048 Tile Game</h1>
   <div id="game-board"></div>
 
   <script>
@@ -78,28 +78,53 @@
       }
 
       function move(direction) {
-        // Implement the move logic (similar to previous code)
-        // ...
+        for (let row = 0; row < 4; row++) {
+          for (let col = direction === 'right' ? 2 : 1; direction === 'right' ? col >= 0 : col < 4; direction === 'right' ? col-- : col++) {
+            const currentIndex = row * 4 + col;
+            const currentValue = tiles[currentIndex];
+
+            if (currentValue !== 0) {
+              let nextCol = direction === 'right' ? col + 1 : col - 1;
+
+              while (direction === 'right' ? nextCol < 4 : nextCol >= 0 && tiles[row * 4 + nextCol] === 0) {
+                nextCol += direction === 'right' ? 1 : -1;
+              }
+
+              if (direction === 'right' ? nextCol < 4 : nextCol >= 0 && tiles[row * 4 + nextCol] === currentValue) {
+                mergeTiles(currentIndex, row * 4 + nextCol);
+              } else {
+                tiles[row * 4 + (direction === 'right' ? nextCol - 1 : nextCol + 1)] = currentValue;
+                tiles[currentIndex] = 0;
+              }
+            }
+          }
+        }
+      }
+
+      function handleSwipe(startX, startY, endX, endY) {
+        const deltaX = endX - startX;
+        const deltaY = endY - startY;
+        const threshold = 50;
+
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > threshold) {
+          move(deltaX > 0 ? 'right' : 'left');
+        } else if (Math.abs(deltaY) > threshold) {
+          move(deltaY > 0 ? 'down' : 'up');
+        }
+
         addRandomTile();
       }
 
-      // Other move functions (moveLeft, moveUp, moveDown) can be similar to previous code
-
-      function handleSwipe(startX, startY, endX, endY) {
-        // Implement the handleSwipe logic (similar to previous code)
-        // ...
-        // Ensure that the call to move() is within the swipe handling logic
-        move('right'); // Example: always move right for testing
-      }
-
       function handleTouchStart(event) {
-        // Implement the handleTouchStart logic (similar to previous code)
-        // ...
+        touchStartX = event.touches[0].clientX;
+        touchStartY = event.touches[0].clientY;
       }
 
       function handleTouchMove(event) {
-        // Implement the handleTouchMove logic (similar to previous code)
-        // ...
+        event.preventDefault();
+        const touchMoveX = event.touches[0].clientX;
+        const touchMoveY = event.touches[0].clientY;
+        handleSwipe(touchStartX, touchStartY, touchMoveX, touchMoveY);
       }
 
       document.addEventListener('touchstart', handleTouchStart);
